@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>GIPHY Homework</title>
+</head>
+<body>
+	<div class="container">
+		<h1>GIPHY Search</h1>	
+	<!--buttons will go here-->
+		<div id="button-view"></div>
+	<!--text box to add a button on the fly-->
+		<form id="add-button">
+			<label for="artist input">Add an Artist</label>
+			<input type="text" id="artist-input">
+	<!--when you click button it will submit and add a new button-->
+			<input id="add-artist" type="submit" value="Add an artist">
+		</form>
+	<!--results of GIPHY images-->
+		<div id="results"></div>
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+
+
+		//intial array of artists 
+		var artists = ["beyonce", "drake", "rihanna"];
+
+			function getInfo() {
+			//#add-artist
+		      	var artists = $(this).attr("data-person");
+		      	var queryURL = "http://api.giphy.com/v1/gifs/search?q=" +
+		        artists + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+		      $.ajax({
+		          url: queryURL,
+		          method: "GET"
+		        })
+		      	.done(function(response) {
+		  	      var results = response.data;
+
+			        for (var i = 0; i < results.length; i++) {
+				    	var gifDiv = $("<div class='item'>");
+
+				        var rating = results[i].rating;
+
+				        var p = $("<p>").text("Rating: " + rating);
+
+				   	    var peopleimg = $("<img>");
+				    	peopleimg.attr("src", results[i].images.fixed_height_still.url);
+
+				            //pulling still images from object and adding new attribute called still
+				        peopleimg.attr("still", results[i].images.fixed_height_still.url);
+				            //pulling animated images from object and adding new attribute called animate
+				        peopleimg.attr("animate", results[i].images.fixed_height.url);
+				            //adding new atrribute 
+				       	peopleimg.attr("state", "still")
+				            //adding class to images so we can call all
+				        peopleimg.addClass("gifs")
+
+				        gifDiv.prepend(p);
+				        gifDiv.prepend(peopleimg);
+
+				        $("#results").prepend(gifDiv);
+			        }
+		      	});
+			}
+
+		//Create buttons 
+		function generateButtons () {
+			//we have delete the buttons prior to adding new otherwise we will have repeat buttons 
+			$("#button-view").empty();
+			//for every artist in the artists array
+			for (var i=0; i < artists.length; i++) {
+				//create new button tage
+	 			var button = $("<button>");
+	 			//add class "people"
+	 			button.addClass("people");
+	 			//add the attribute data-person
+	 			button.attr("data-person", 
+	 				artists[i]);
+	 			//add the name on the button
+	 			button.text(artists[i]);
+
+	 			//display in the button view section
+	 			$("#button-view").append(button);
+			}
+		}
+
+		function addButtons() {
+			//everytime we click the add an artist button
+			//why do we pass event through
+			$("#add-artist").on("click", function(event) {
+				//prevents the form from trying to submit itself
+				event.preventDefault();
+
+				//grabbing input put in text box
+				var people = $("#artist-input").val().trim();
+				//if this button is not in the array; push input into the array
+				if (artists.indexOf(people.toLowerCase()) === -1) {
+					artists.push(people);
+				}
+				else {
+					alert("We already have that button!");
+				}
+	
+				generateButtons();
+			});
+		}
+
+
+	
+
+		generateButtons();
+		addButtons();
+		
+		$(document).on("click", ".people", getInfo);
+
+	
+			$(document).on("click", ".gifs", function() {
+				var giphy = $(this).attr("state");
+				var pic = $(this).attr("still");
+				var moving = $(this).attr("animate");
+
+				if (giphy === "still") {
+					$(this).attr("src", moving);
+					$(this).attr("state", "animate");
+				}
+				else {
+					$(this).attr("src", pic);
+					$(this).attr("state", "still");
+				}
+			});
+
+	});
+
+	
+
+
+
+
+
+</script>
+</body>
+</html>
